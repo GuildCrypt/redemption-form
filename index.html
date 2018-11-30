@@ -13,7 +13,6 @@
       }
       input {
         border: none;
-        width: 100%;
       }
       .main {
         background-color: #290B32;
@@ -65,6 +64,17 @@
           <tr>
             <td>First Name</td>
             <td><input name="firstNameAscii" class="form-control" type="text" required></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="tos" required>
+                <label class="form-check-label" for="tos">
+                  I agree to the <a href="./tos.html">Terms of Service</a>.
+                </label>
+              </div>
+            </td>
           </tr>
         </table>
         <button class="btn btn-default pull-right">Generate Redemption Code</button>
