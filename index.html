@@ -37,14 +37,9 @@
       <form id="identification-form" onsubmit="generateRedemptionCode(event)">
         <table class="table">
           <tr>
-            <td>Token Id (Hex)</td>
+            <td>Token Id</td>
             <td>
-              <div class="input-group">
-                <div class="input-group-addon">
-                  <div class="input-group-text">0x</div>
-                </div>
-                <input id="token-id-hex" name="tokenIdHex" class="form-control" pattern="[a-f0-9]{64}" required value="2aaac39b14597626d94e53c290cd7a6f4d6aed6672f1767f1e8507db41d4d979">
-              </div>
+              <input name="tokenId" id="tokenId" class="form-control" type="number" min="0" required>
               <br/>
               <div class="alert alert-warning">
                 Make sure this is the correct token id for the token you're attempting to redeem.
@@ -119,6 +114,11 @@
     <script type="module" src="./lib/base2048.js"></script>
     <script type="text/javascript">
 
+      if(document.location.hash) {
+        document.getElementById('tokenId').value = document.location.hash.substr(1)
+      }
+
+
       $identificationForm = document.getElementById('identification-form')
       $redemptionCode = document.getElementById('redemption-code')
       $redemptionCodeTxt = document.getElementById('redemption-code-txt')
@@ -143,7 +143,7 @@
         $redemptionCode.style.display = 'none'
         const formData = new FormData($identificationForm)
 
-        const tokenIdHex = formData.get('tokenIdHex')
+        const tokenId = formData.get('tokenId')
 
         const nonce = new Uint8Array(32)
         crypto.getRandomValues(nonce)
@@ -173,7 +173,7 @@
 
         const redemptionCodeJson = JSON.stringify({
           'version': "0",
-          'tokenIdHex': tokenIdHex,
+          'tokenId': tokenId,
           'id': idPojo,
           redemptionCodeEncodingBase2048English,
           nonceHex,
@@ -190,7 +190,7 @@
           // + redemptionCodeHashBase2048
 
         const epoch = Math.floor(((new Date).getTime())/ 1000)
-        const fileName = `gc-${tokenIdHex}-${epoch}.gc.json.txt`
+        const fileName = `gc-${tokenId}-${epoch}.gc.json.txt`
 
         $fileName.innerText = fileName
         $redemptionCodeTxt.innerText = redemptionCodeJson
