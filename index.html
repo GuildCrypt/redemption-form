@@ -33,12 +33,12 @@
       <div class="alert alert-warning">
         Make sure all information here matches the identification you will provide to the Tokenizer. If you are not sure what identification the Tokenizer will accept, please contact them directly.
       </div>
-      <form id="identification-form" onsubmit="generateRedemptionCode(event)">
+      <form id="identification-form">
         <table class="table">
           <tr>
             <td>Token Id</td>
             <td>
-              <input name="tokenId" id="tokenId" class="form-control" type="number" min="0" required>
+              <input name="tokenId" id="tokenId" class="form-control" type="number" min="0" required disabled>
               <br/>
               <div class="alert alert-warning">
                 Make sure this is the correct token id for the token you're attempting to redeem.
@@ -117,102 +117,11 @@
           I have saved a copy of my Redemption Code Information and backed it up.
         </label>
         <br/>
-        <button class="btn btn-default" disabled>Submit Redemption Code Hash & Destroy Token</button>
+        <button class="btn btn-default" id="submit-redemption-code-hash">Submit Redemption Code Hash & Destroy Token</button>
       </div>
     </div>
     <script type="module" src="./lib/redeemer.js"></script>
     <script type="module" src="./lib/base2048.js"></script>
-    <script type="text/javascript">
-
-      if(document.location.hash) {
-        document.getElementById('tokenId').value = document.location.hash.substr(1)
-      }
-
-
-      $identificationForm = document.getElementById('identification-form')
-      $redemptionCode = document.getElementById('redemption-code')
-      $redemptionCodeTxt = document.getElementById('redemption-code-txt')
-      $redemptionCodeTxtDownload = document.getElementById('redemption-code-txt-download')
-      $fileName = document.getElementById('file-name')
-
-      function zeroPadAscii(ascii, length) {
-        return `${'0'.repeat(length - ascii.length)}${ascii}`
-      }
-
-      const fields = ['birthYearAscii', 'birthMonthAscii', 'birthDayAscii', 'lastNameAscii', 'firstNameAscii']
-      const divider = '\r\r-------------------------------\r\r'
-
-      function toHexString(byteArray) {
-        return Array.from(byteArray, function(byte) {
-          return ('0' + (byte & 0xFF).toString(16)).slice(-2);
-        }).join('')
-      }
-
-      async function generateRedemptionCode(event) {
-        event.preventDefault()
-        $redemptionCode.style.display = 'none'
-        const formData = new FormData($identificationForm)
-
-        const tokenId = formData.get('tokenId')
-
-        const nonce = new Uint8Array(32)
-        crypto.getRandomValues(nonce)
-        const redemptionCodePojo = {
-          nonce: nonce
-        }
-        fields.forEach((field) => {
-          redemptionCodePojo[field] = formData.get(field)
-        })
-        redemptionCodePojo['birthYearAscii'] = zeroPadAscii(redemptionCodePojo['birthYearAscii'], 4)
-        redemptionCodePojo['birthMonthAscii'] = zeroPadAscii(redemptionCodePojo['birthMonthAscii'], 2)
-        redemptionCodePojo['birthDayAscii'] = zeroPadAscii(redemptionCodePojo['birthDayAscii'], 2)
-
-        const redemptionCodeEncoding = redeemer.getRedemptionCodeEncoding(redemptionCodePojo)
-        const redemptionCodeHash = new Uint8Array(await crypto.subtle.digest('SHA-256', redemptionCodeEncoding))
-
-        const redemptionCodeEncodingBase2048English = base2048.english.encode(redemptionCodeEncoding)
-        const redemptionCodeEncodingHex = toHexString(redemptionCodeEncoding)
-        const redemptionCodeHashHex = toHexString(redemptionCodeHash)
-        const nonceHex = toHexString(nonce)
-
-        const idPojo = {
-        }
-        fields.forEach((field) => {
-          idPojo[field] = redemptionCodePojo[field]
-        })
-
-        const redemptionCodeJson = JSON.stringify({
-          'version': "0",
-          'tokenId': tokenId,
-          'id': idPojo,
-          redemptionCodeEncodingBase2048English,
-          nonceHex,
-          redemptionCodeEncodingHex,
-          redemptionCodeHashHex
-        }, null, 2)
-          //   'REDEMPTION CODE ENCODING BASE2048:\r'
-          // + redemptionCodeEncodingBase2048
-          // + divider
-          // + 'REDMPTION CODE NONCE BASE2048:\r'
-          // + redemptionCodeNonceBase2048
-          // + divider
-          // + 'REDMPTION CODE HASH BASE2048:\r'
-          // + redemptionCodeHashBase2048
-
-        const epoch = Math.floor(((new Date).getTime())/ 1000)
-        const fileName = `gc-${tokenId}-${epoch}.gc.json.txt`
-
-        $fileName.innerText = fileName
-        $redemptionCodeTxt.innerText = redemptionCodeJson
-
-        $redemptionCodeTxtDownload.download = fileName
-        $redemptionCodeTxtDownload.href= `data:text/plain;charset=utf-8,${redemptionCodeJson}`
-
-        $redemptionCode.style.display = 'block'
-
-        console.log(redeemer.getRedemptionCodeEncoding(redemptionCodePojo))
-      }
-    </script>
     <script type="module" src="./app.js"></script>
   </body>
 </html>
