@@ -57,7 +57,6 @@ function toHexString(byteArray) {
 
 async function checkOwner() {
   const tokenId = getTokenId()
-  console.log(gc0)
   gc0.ownerOf(tokenId, (err, owner) => {
     if (owner !== web3.eth.accounts[0]) {
       if(confirm(`Token ${tokenId} belongs to ${owner} but you are using ${web3.eth.accounts[0]}. Switch accounts and try again.`)) {
